@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Simplified Markers</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --active-bg: #eff6ff;
+            --sidebar-width: 280px;
+        }
+
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Inter', sans-serif; 
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none; /* Prevents default tablet zooming and scrolling while drawing */
+        }
+
+        body { 
+            background-color: var(--bg); 
+            color: var(--text-main); 
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Navigation Header */
+        nav { 
+            background: white; 
+            padding: 0.75rem 1.5rem; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05); 
+            z-index: 10; 
+            height: 60px;
+        }
+        
+        .logo { 
+            font-size: 1.25rem; 
+            font-weight: 800; 
+            color: var(--primary); 
+            letter-spacing: -0.5px; 
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Main Workspace Wrapper */
+        .workspace {
+            display: flex;
+            flex: 1;
+            position: relative;
+            height: calc(100vh - 60px);
+        }
+
+        /* Control Panel Layout */
+        .toolbar {
+            background: white;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            border-right: 1px solid var(--border);
+            z-index: 5;
+            overflow-y: auto;
+        }
+
+        .toolbar-left {
+            width: 110px;
+            align-items: center;
+        }
+
+        .toolbar-right {
+            width: var(--sidebar-width);
+            border-right: none;
+            border-left: 1px solid var(--border);
+        }
+
+        /* Tool Buttons and Grids */
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            width: 100%;
+        }
+
+        .btn-tool {
+            cursor: pointer;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: white;
+            color: var(--text-main);
+            font-size: 1.1rem;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-tool span {
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .btn-tool:hover {
+            background: var(--bg);
+            border-color: var(--text-muted);
+        }
+
+        .btn-tool.active {
+            background: var(--active-bg);
+            color: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 1px var(--primary);
+        }
+
+        .btn-action {
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: white;
+            color: var(--text-main);
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        .btn-action:hover:not(:disabled) {
+            background: var(--bg);
+        }
+
+        .btn-action:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .tool-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .tool-section label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Slider Control Formatting */
+        .range-slider {
+            width: 100%;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            transition: 0.1s;
+        }
+
+        /* Swatches inspired by Microsoft Paint color metrics */
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+
+        .color-swatch {
+            aspect-ratio: 1;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+            transition: transform 0.1s;
+        }
+
+        .color-swatch:active {
+            transform: scale(0.9);
+        }
+
+        .color-swatch.active {
+            border-color: var(--text-main);
+            transform: scale(1.05);
+        }
+
+        .custom-color-picker {
+            width: 100%;
+            height: 40px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 0;
+            background: none;
+        }
+
+        /* Canvas Wrapper Setup */
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            background: #e2e8f0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            background: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            cursor: crosshair;
+            position: absolute;
+        }
+
+        /* Mode Banner Notice Style */
+        .mode-banner {
+            background: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mode-banner.pen-active {
+            background: #eff6ff;
+            color: #1e40af;
+            border-color: #bfdbfe;
+        }
+
+        /* Overlay Resizing Transformation Elements */
+        .resize-overlay {
+            position: absolute;
+            border: 2px dashed var(--primary);
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+        }
+
+        .resize-handle {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: white;
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            pointer-events: auto;
+            cursor: nwse-resize;
+        }
+
+        .resize-handle.br { right: -7px; bottom: -7px; cursor: nwse-resize; }
+        .resize-handle.tr { right: -7px; top: -7px; cursor: nesw-resize; }
+        .resize-handle.bl { left: -7px; bottom: -7px; cursor: nesw-resize; }
+        .resize-handle.tl { left: -7px; top: -7px; cursor: nwse-resize; }
+
+        /* Dialog Text Prompt Form Configurations */
+        .text-input-dialog {
+            position: absolute;
+            background: white;
+            border: 1px solid var(--primary);
+            padding: 6px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 200;
+            display: flex;
+            gap: 6px;
+        }
+
+        .text-input-dialog input {
+            padding: 6px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            outline: none;
+            font-size: 0.9rem;
+        }
+
+        /* Device Incompatibility Screen Overlay styling */
+        #device-warning-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #ffffff;
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-main);
+        }
+
+        #device-warning-overlay i {
+            font-size: 4rem;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+
+        #device-warning-overlay h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.5px;
+        }
+
+        #device-warning-overlay p {
+            font-size: 1rem;
+            color: var(--text-muted);
+            max-width: 400px;
+            line-height: 1.5;
+        }
+
+        /* Tablet Optimization Queries */
+        @media (max-width: 1024px) {
+            .toolbar-right {
+                position: absolute;
+                right: 0;
+                top: 0;
+                height: 100%;
+                box-shadow: -5px 0 25px rgba(0,0,0,0.05);
+                transform: translateX(100%);
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .toolbar-right.open {
+                transform: translateX(0);
+            }
+            .toggle-sidebar-btn {
+                display: flex !important;
+            }
+        }
+
+        .toggle-sidebar-btn {
+            display: none;
+            background: var(--primary);
+            color: white;
+            border: none;
+        }
+
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .fade-in { animation: fadeIn 0.2s ease-out forwards; }
+    </style>
+</head>
+<body>
+
+    <div id="device-warning-overlay">
+        <i class="fas fa-tablet-screen-button"></i>
+        <h1>Tablet or PC View Required</h1>
+        <p>Simplified Markers is built for precision high-performance layout workflows. Please access this application via a Tablet, Canvas Stylus Monitor, or Desktop PC environment.</p>
+    </div>
+
+    <nav>
+        <div class="logo">
+            <i class="fas fa-marker" style="transform: rotate(-45deg);"></i> 
+            Simplified Markers
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-action" id="btn-undo" title="Undo" disabled>
+                <i class="fas fa-undo"></i>
+            </button>
+            <button class="btn-action" id="btn-redo" title="Redo" disabled>
+                <i class="fas fa-redo"></i>
+            </button>
+            <button class="btn-action toggle-sidebar-btn" onclick="document.querySelector('.toolbar-right').classList.toggle('open')">
+                <i class="fas fa-sliders"></i> Context Menu
+            </button>
+            <button class="btn-action" id="btn-export" style="background: #eff6ff; color: #1e40af; border-color: #bfdbfe;" title="Export Artwork">
+                <i class="fas fa-file-export"></i> Export Image
+            </button>
+            <button class="btn-action" id="btn-clear" style="background: #fee2e2; color: #b91c1c; border-color: #fecaca;">
+                <i class="fas fa-trash-can"></i> Reset Canvas
+            </button>
+        </div>
+    </nav>
+
+    <div class="workspace">
+        
+        <div class="toolbar toolbar-left">
+            <div class="tool-section">
+                <label style="text-align: center;">Modes</label>
+                <button class="btn-tool active" data-tool="pen" title="Draw Tool">
+                    <i class="fas fa-pen"></i><span>Draw</span>
+                </button>
+                <button class="btn-tool" data-tool="eraser" title="Eraser Tool">
+                    <i class="fas fa-eraser"></i><span>Eraser</span>
+                </button>
+                <button class="btn-tool" data-tool="text" title="Text Tool">
+                    <i class="fas fa-font"></i><span>Text</span>
+                </button>
+                <button class="btn-tool" data-tool="shape" title="Shapes Tool">
+                    <i class="fas fa-shapes"></i><span>Shape</span>
+                </button>
+                <button class="btn-tool" data-tool="select" title="Move & Resize Shape">
+                    <i class="fas fa-arrow-pointer"></i><span>Transform</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="canvas-container">
+            <canvas id="paintCanvas"></canvas>
+            
+            <div class="resize-overlay" id="resizeOverlay">
+                <div class="resize-handle tl" data-handle="tl"></div>
+                <div class="resize-handle tr" data-handle="tr"></div>
+                <div class="resize-handle bl" data-handle="bl"></div>
+                <div class="resize-handle br" data-handle="br"></div>
+            </div>
+        </div>
+
+        <div class="toolbar toolbar-right">
+            
+            <div class="tool-section">
+                <label>Stylus Calibration</label>
+                <div class="mode-banner" id="banner-mode-info">
+                    <i class="fas fa-fingerprint"></i> Standard Capacitive Touch
+                </div>
+                <button class="btn-action" id="toggle-pen-mode" style="width: 100%; margin-top: 5px; font-weight: 600;">
+                    <i class="fas fa-signature"></i> Enable Pen Simulation Mode
+                </button>
+            </div>
+
+            <hr style="opacity: 0.1;">
+
+            <div class="tool-section">
+                <div style="display: flex; justify-content: space-between;">
+                    <label id="slider-size-label">Brush Stroke Weight</label>
+                    <span id="lbl-stroke-size" style="font-size: 0.8rem; font-weight: 600;">8px</span>
+                </div>
+                <input type="range" class="range-slider" id="stroke-weight" min="2" max="100" value="8">
+            </div>
+
+            <div class="tool-section" id="shape-selection-wrapper">
+                <label>Active Primitive Geometry</label>
+                <div class="tool-grid" style="grid-template-columns: repeat(3, 1fr);">
+                    <button class="btn-tool active" data-shape="rect" style="padding: 8px;">
+                        <i class="far fa-square"></i><span style="font-size:0.55rem;">Rectangle</span>
+                    </button>
+                    <button class="btn-tool" data-shape="circle" style="padding: 8px;">
+                        <i class="far fa-circle"></i><span style="font-size:0.55rem;">Circle</span>
+                    </button>
+                    <button class="btn-tool" data-shape="triangle" style="padding: 8px;">
+                        <i class="fas fa-triangle-exclamation" style="font-weight:100; font-size:0.9rem;"></i><span style="font-size:0.55rem;">Triangle</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="tool-section">
+                <label>External Matrix Image Import</label>
+                <button class="btn-action" onclick="document.getElementById('img-file-loader').click()" style="background: var(--bg); border-style: dashed; border-width: 2px;">
+                    <i class="fas fa-file-image"></i> Choose Image File
+                </button>
+                <input type="file" id="img-file-loader" accept="image/*" class="hidden" style="display: none;">
+            </div>
+
+            <hr style="opacity: 0.1;">
+
+            <div class="tool-section">
+                <label>Color Swatches</label>
+                <div class="color-palette" id="paint-matrix-palette">
+                    </div>
+                <label style="margin-top: 8px;">Spectrum Selection Mixer</label>
+                <input type="color" class="custom-color-picker" id="spectrum-color-picker" value="#2563eb">
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Setup configuration metrics
+        const canvas = document.getElementById('paintCanvas');
+        const ctx = canvas.getContext('2d');
+        const resizeOverlay = document.getElementById('resizeOverlay');
+        
+        // System wide responsive operational states
+        let state = {
+            currentTool: 'pen', // pen, eraser, text, shape, select
+            strokeColor: '#2563eb',
+            strokeWidth: 8,
+            activeShape: 'rect',
+            penSimulation: false,
+            isDrawing: false,
+            elements: [],       // Stores drawn shapes/images for selection and rendering
+            selectedElement: null,
+            history: [],
+            historyIndex: -1
+        };
+
+        // Standard palette colors inspired by standard configurations
+        const standardColors = [
+            '#000000', '#ffffff', '#7f7f7f', '#c3c3c3', '#880015', 
+            '#ed1c24', '#ff7f27', '#fff200', '#22b14c', '#00a2e8', 
+            '#3f48cc', '#a349a4', '#ffaec9', '#b5e61d', '#7092be'
+        ];
+
+        // Track Pointer coordinates during high-precision rendering calculations
+        let startX = 0, startY = 0;
+        let lastX = 0, lastY = 0;
+        let isResizing = false;
+        let activeHandle = null;
+
+        // Custom Variables for Velocity Tracking to achieve Pen Pressure / Smooth Tapering effects
+        let drawPoints = [];
+
+        // Application initialization
+        window.addEventListener('DOMContentLoaded', () => {
+            checkDeviceCompatibility();
+            initCanvasDimensions();
+            initColorPalette();
+            attachEventHandlers();
+            saveCanvasState();
+        });
+
+        // Device filter configuration checking screen boundaries
+        function checkDeviceCompatibility() {
+            const overlay = document.getElementById('device-warning-overlay');
+            if (window.innerWidth < 768) {
+                overlay.style.display = 'flex';
+            } else {
+                overlay.style.display = 'none';
+            }
+        }
+
+        // Re-verify orientation scale shifts
+        window.addEventListener('resize', checkDeviceCompatibility);
+
+        // Scaled to support structural displays cleanly
+        function initCanvasDimensions() {
+            canvas.width = 1024;
+            canvas.height = 700;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            redrawAllElements();
+        }
+
+        // Initialize Hex Color matrix arrays 
+        function initColorPalette() {
+            const container = document.getElementById('paint-matrix-palette');
+            standardColors.forEach((color, i) => {
+                const swatch = document.createElement('div');
+                swatch.className = `color-swatch ${i === 9 ? 'active' : ''}`;
+                swatch.style.backgroundColor = color;
+                swatch.dataset.color = color;
+                container.appendChild(swatch);
+            });
+            state.strokeColor = standardColors[9]; // Defaults to primary hex configuration standard 
+            document.getElementById('spectrum-color-picker').value = state.strokeColor;
+        }
+
+        // Bind interactive workspace event triggers
+        function attachEventHandlers() {
+            // Left Toolbar Switching Mode Controls
+            document.querySelectorAll('.toolbar-left [data-tool]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.toolbar-left [data-tool]').forEach(b => b.classList.remove('active'));
+                    const targetBtn = e.currentTarget;
+                    targetBtn.classList.add('active');
+                    state.currentTool = targetBtn.dataset.tool;
+                    
+                    // Reset Active Transform configurations when dropping mode execution scopes
+                    if(state.currentTool !== 'select') {
+                        state.selectedElement = null;
+                        hideResizeOverlay();
+                    }
+                    redrawAllElements();
+                });
+            });
+
+            // Right Toolbar Shape Switching Blocks
+            document.querySelectorAll('[data-shape]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('[data-shape]').forEach(b => b.classList.remove('active'));
+                    e.currentTarget.classList.add('active');
+                    state.activeShape = e.currentTarget.dataset.shape;
+                });
+            });
+
+            // Handle Stroke Weight Slider configurations
+            document.getElementById('stroke-weight').addEventListener('input', (e) => {
+                state.strokeWidth = parseInt(e.target.value);
+                document.getElementById('lbl-stroke-size').innerText = state.strokeWidth + 'px';
+            });
+
+            // Handle Matrix Palette color triggers
+            document.getElementById('paint-matrix-palette').addEventListener('click', (e) => {
+                if(e.target.classList.contains('color-swatch')) {
+                    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+                    e.target.classList.add('active');
+                    state.strokeColor = e.target.dataset.color;
+                    document.getElementById('spectrum-color-picker').value = state.strokeColor;
+                }
+            });
+
+            document.getElementById('spectrum-color-picker').addEventListener('input', (e) => {
+                state.strokeColor = e.target.value;
+                document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+            });
+
+            // Simulation Processing Engine Configuration Hooks
+            document.getElementById('toggle-pen-mode').addEventListener('click', () => {
+                state.penSimulation = !state.penSimulation;
+                const banner = document.getElementById('banner-mode-info');
+                const btn = document.getElementById('toggle-pen-mode');
+                
+                if(state.penSimulation) {
+                    banner.className = "mode-banner pen-active";
+                    banner.innerHTML = `<i class="fas fa-pen-nib"></i> Fine-Tip Stylus Mode Enabled`;
+                    btn.innerHTML = `<i class="fas fa-fingerprint"></i> Switch to Standard Touch`;
+                    btn.style.background = "#e11d48";
+                    btn.style.color = "white";
+                } else {
+                    banner.className = "mode-banner";
+                    banner.innerHTML = `<i class="fas fa-fingerprint"></i> Standard Capacitive Touch`;
+                    btn.innerHTML = `<i class="fas fa-signature"></i> Enable Pen Simulation Mode`;
+                    btn.style.background = "white";
+                    btn.style.color = "var(--text-main)";
+                }
+            });
+
+            // History Matrix Controls
+            document.getElementById('btn-undo').addEventListener('click', undo);
+            document.getElementById('btn-redo').addEventListener('click', redo);
+            
+            // Export pipeline feature handler
+            document.getElementById('btn-export').addEventListener('click', exportCanvasImage);
+
+            document.getElementById('btn-clear').addEventListener('click', () => {
+                if(confirm("Are you sure you want to clear the canvas layout? All unsaved updates will be removed.")) {
+                    state.elements = [];
+                    state.selectedElement = null;
+                    hideResizeOverlay();
+                    redrawAllElements();
+                    saveCanvasState();
+                }
+            });
+
+            // Matrix Image Reader Processing Operations
+            document.getElementById('img-file-loader').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if(file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            // Automatically align image to fit the center of viewport gracefully
+                            const element = {
+                                type: 'image',
+                                img: img,
+                                x: 150,
+                                y: 100,
+                                w: img.width > 400 ? 400 : img.width,
+                                h: img.height > 300 ? 300 : img.height
+                            };
+                            state.elements.push(element);
+                            saveCanvasState();
+                            redrawAllElements();
+                        };
+                        img.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Pointer Action Control Listeners for Tracking Cross-Device Vector Input Coordinates
+            canvas.addEventListener('pointerdown', handlePointerDown);
+            window.addEventListener('pointermove', handlePointerMove);
+            window.addEventListener('pointerup', handlePointerUp);
+
+            // Transformation Scale Resize Hooks
+            document.querySelectorAll('.resize-handle').forEach(handle => {
+                handle.addEventListener('pointerdown', (e) => {
+                    e.stopPropagation();
+                    isResizing = true;
+                    activeHandle = handle.dataset.handle;
+                });
+            });
+        }
+
+        // Canvas Coordinates Converter
+        function getCanvasCoordinates(e) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        }
+
+        /* POINTER DOWN ACTION PROCESSING BLOCK */
+        function handlePointerDown(e) {
+            const coords = getCanvasCoordinates(e);
+            startX = coords.x;
+            startY = coords.y;
+            lastX = coords.x;
+            lastY = coords.y;
+            state.isDrawing = true;
+
+            if (state.currentTool === 'pen' || state.currentTool === 'eraser') {
+                drawPoints = [{ x: startX, y: startY, width: state.strokeWidth }];
+                
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                ctx.strokeStyle = state.currentTool === 'eraser' ? '#ffffff' : state.strokeColor;
+                ctx.lineWidth = state.strokeWidth;
+                ctx.stroke();
+            } 
+            else if (state.currentTool === 'select') {
+                // Determine if tracking boundary overlay conflicts with any element geometry 
+                const target = getElementAtCoordinates(startX, startY);
+                if (target) {
+                    state.selectedElement = target;
+                    showResizeOverlay(target);
+                } else {
+                    state.selectedElement = null;
+                    hideResizeOverlay();
+                }
+                redrawAllElements();
+            }
+        }
+
+        /* POINTER MOVE ACTION PROCESSING BLOCK */
+        function handlePointerMove(e) {
+            if (!state.isDrawing && !isResizing) return;
+            const coords = getCanvasCoordinates(e);
+
+            if (isResizing && state.selectedElement) {
+                // Dynamically process modifications to vector geometry metrics
+                const elem = state.selectedElement;
+                if (activeHandle === 'br') {
+                    elem.w = Math.max(20, coords.x - elem.x);
+                    elem.h = Math.max(20, coords.y - elem.y);
+                } else if (activeHandle === 'bl') {
+                    const oldW = elem.w;
+                    elem.w = Math.max(20, (elem.x + elem.w) - coords.x);
+                    elem.x += (oldW - elem.w);
+                    elem.h = Math.max(20, coords.y - elem.y);
+                } else if (activeHandle === 'tr') {
+                    elem.w = Math.max(20, coords.x - elem.x);
+                    const oldH = elem.h;
+                    elem.h = Math.max(20, (elem.y + elem.h) - coords.y);
+                    elem.y += (oldH - elem.h);
+                } else if (activeHandle === 'tl') {
+                    const oldW = elem.w;
+                    elem.w = Math.max(20, (elem.x + elem.w) - coords.x);
+                    elem.x += (oldW - elem.w);
+                    const oldH = elem.h;
+                    elem.h = Math.max(20, (elem.y + elem.h) - coords.y);
+                    elem.y += (oldH - elem.h);
+                }
+                showResizeOverlay(elem);
+                redrawAllElements();
+                return;
+            }
+
+            if (!state.isDrawing) return;
+
+            if (state.currentTool === 'pen' || state.currentTool === 'eraser') {
+                let calculatedWidth = state.strokeWidth;
+
+                if (state.penSimulation) {
+                    // Pen Simulation Math Engine: Implements a velocity calculation mapping distance over time thresholds 
+                    // dynamically altering brush width limits to mimic real fluid fountain pen stroke dynamics.
+                    const distance = Math.sqrt(Math.pow(coords.x - lastX, 2) + Math.pow(coords.y - lastY, 2));
+                    const minSimulatedWidth = Math.max(2, state.strokeWidth * 0.25);
+                    const maxSimulatedWidth = state.strokeWidth * 1.5;
+                    
+                    // Higher speeds yield narrower weights; slower speeds produce heavier points
+                    calculatedWidth = Math.max(minSimulatedWidth, Math.min(maxSimulatedWidth, state.strokeWidth - (distance * 0.4)));
+                    
+                    // Linear interpolation to prevent jarring width transitions
+                    const previousPoint = drawPoints[drawPoints.length - 1];
+                    if (previousPoint) {
+                        calculatedWidth = previousPoint.width * 0.6 + calculatedWidth * 0.4;
+                    }
+                }
+
+                drawPoints.push({ x: coords.x, y: coords.y, width: calculatedWidth });
+
+                // Render lines using dynamic segment configurations
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(coords.x, coords.y);
+                ctx.strokeStyle = state.currentTool === 'eraser' ? '#ffffff' : state.strokeColor;
+                ctx.lineWidth = calculatedWidth;
+                ctx.stroke();
+
+                lastX = coords.x;
+                lastY = coords.y;
+            } 
+            else if (state.currentTool === 'select' && state.selectedElement) {
+                // Handle translation operations dragging target elements
+                const dx = coords.x - lastX;
+                const dy = coords.y - lastY;
+                state.selectedElement.x += dx;
+                state.selectedElement.y += dy;
+                showResizeOverlay(state.selectedElement);
+                redrawAllElements();
+                lastX = coords.x;
+                lastY = coords.y;
+            } 
+            else if (state.currentTool === 'shape') {
+                // Interactive dynamic temporary overlay visualization render step
+                redrawAllElements();
+                ctx.beginPath();
+                ctx.strokeStyle = state.strokeColor;
+                ctx.lineWidth = state.strokeWidth;
+                
+                const currentWidth = coords.x - startX;
+                const currentHeight = coords.y - startY;
+
+                if (state.activeShape === 'rect') {
+                    ctx.strokeRect(startX, startY, currentWidth, currentHeight);
+                } else if (state.activeShape === 'circle') {
+                    ctx.arc(startX + currentWidth/2, startY + currentHeight/2, Math.abs(currentWidth/2), 0, 2 * Math.PI);
+                    ctx.stroke();
+                } else if (state.activeShape === 'triangle') {
+                    ctx.moveTo(startX + currentWidth / 2, startY);
+                    ctx.lineTo(startX, startY + currentHeight);
+                    ctx.lineTo(startX + currentWidth, startY + currentHeight);
+                    ctx.closePath();
+                    ctx.stroke();
+                }
+            }
+        }
+
+        /* POINTER UP ACTION PROCESSING BLOCK */
+        function handlePointerUp(e) {
+            if (isResizing) {
+                isResizing = false;
+                activeHandle = null;
+                saveCanvasState();
+                return;
+            }
+
+            if (!state.isDrawing) return;
+            state.isDrawing = false;
+            const coords = getCanvasCoordinates(e);
+
+            if (state.currentTool === 'pen' || state.currentTool === 'eraser') {
+                // Convert temporary line cache elements directly into persistent vector entities
+                state.elements.push({
+                    type: 'path',
+                    points: drawPoints,
+                    color: state.currentTool === 'eraser' ? '#ffffff' : state.strokeColor
+                });
+                saveCanvasState();
+            } 
+            else if (state.currentTool === 'shape') {
+                state.elements.push({
+                    type: 'shape',
+                    shapeType: state.activeShape,
+                    x: startX,
+                    y: startY,
+                    w: coords.x - startX,
+                    h: coords.y - startY,
+                    color: state.strokeColor,
+                    width: state.strokeWidth
+                });
+                saveCanvasState();
+                redrawAllElements();
+            } 
+            else if (state.currentTool === 'text') {
+                spawnTextInputField(coords.x, coords.y);
+            }
+        }
+
+        // Draw and update complete vector tree map onto canvas matrix
+        function redrawAllElements() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            state.elements.forEach(element => {
+                ctx.beginPath();
+                
+                if (element.type === 'path') {
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    // Trace dynamically mapped arrays
+                    for (let i = 1; i < element.points.length; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(element.points[i-1].x, element.points[i-1].y);
+                        ctx.lineTo(element.points[i].x, element.points[i].y);
+                        ctx.strokeStyle = element.color;
+                        ctx.lineWidth = element.points[i].width;
+                        ctx.stroke();
+                    }
+                } 
+                else if (element.type === 'shape') {
+                    ctx.strokeStyle = element.color;
+                    ctx.lineWidth = element.width;
+                    ctx.lineCap = 'square';
+                    ctx.lineJoin = 'miter';
+
+                    if (element.shapeType === 'rect') {
+                        ctx.strokeRect(element.x, element.y, element.w, element.h);
+                    } else if (element.shapeType === 'circle') {
+                        ctx.arc(element.x + element.w/2, element.y + element.h/2, Math.abs(element.w/2), 0, 2 * Math.PI);
+                        ctx.stroke();
+                    } else if (element.shapeType === 'triangle') {
+                        ctx.moveTo(element.x + element.w / 2, element.y);
+                        ctx.lineTo(element.x, element.y + element.h);
+                        ctx.lineTo(element.x + element.w, element.y + element.h);
+                        ctx.closePath();
+                        ctx.stroke();
+                    }
+                } 
+                else if (element.type === 'text') {
+                    ctx.fillStyle = element.color;
+                    ctx.font = `${element.size * 1.5}px Inter`;
+                    ctx.textBaseline = 'top';
+                    ctx.fillText(element.text, element.x, element.y);
+                } 
+                else if (element.type === 'image') {
+                    ctx.drawImage(element.img, element.x, element.y, element.w, element.h);
+                }
+            });
+
+            // Re-render highlight selection framework wrappers when using select transform tools
+            if (state.currentTool === 'select' && state.selectedElement) {
+                showResizeOverlay(state.selectedElement);
+            } else {
+                hideResizeOverlay();
+            }
+        }
+
+        // Vector intersection mapping calculations to match cursor hits to dynamic shape geometries
+        function getElementAtCoordinates(x, y) {
+            // Traverse reverse matrix loops to prioritize selecting top layer components
+            for (let i = state.elements.length - 1; i >= 0; i--) {
+                const el = state.elements[i];
+                if (el.type === 'shape' || el.type === 'image') {
+                    const minX = Math.min(el.x, el.x + el.w);
+                    const maxX = Math.max(el.x, el.x + el.w);
+                    const minY = Math.min(el.y, el.y + el.h);
+                    const maxY = Math.max(el.y, el.y + el.h);
+                    
+                    if (x >= minX && x <= maxX && y >= minY && y <= maxY) return el;
+                } 
+                else if (el.type === 'text') {
+                    // Approximate text block boundaries
+                    const w = el.text.length * (el.size * 0.9);
+                    const h = el.size * 2;
+                    if (x >= el.x && x <= el.x + w && y >= el.y && y <= el.y + h) return el;
+                }
+            }
+            return null;
+        }
+
+        // Render Resize Interface Overlays
+        function showResizeOverlay(el) {
+            const rect = canvas.getBoundingClientRect();
+            
+            // Handle negative boundary inversion geometries gracefully
+            const minX = Math.min(el.x, el.x + (el.w || el.text.length * el.size));
+            const minY = Math.min(el.y, el.y + (el.h || el.size * 2));
+            const width = Math.abs(el.w || el.text.length * el.size);
+            const height = Math.abs(el.h || el.size * 2);
+
+            resizeOverlay.style.left = (minX + rect.left + window.scrollX) + 'px';
+            resizeOverlay.style.top = (minY + rect.top + window.scrollY) + 'px';
+            resizeOverlay.style.width = width + 'px';
+            resizeOverlay.style.height = height + 'px';
+            resizeOverlay.style.display = 'block';
+        }
+
+        function hideResizeOverlay() {
+            resizeOverlay.style.display = 'none';
+        }
+
+        // Create Text Element Input Forms
+        function spawnTextInputField(x, y) {
+            // Remove lingering stale element boxes if any exist
+            const oldDialog = document.querySelector('.text-input-dialog');
+            if(oldDialog) oldDialog.remove();
+
+            const dialog = document.createElement('div');
+            dialog.className = 'text-input-dialog fade-in';
+            
+            const rect = canvas.getBoundingClientRect();
+            dialog.style.left = (x + rect.left + window.scrollX) + 'px';
+            dialog.style.top = (y + rect.top + window.scrollY) + 'px';
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = 'Enter text entry...';
+            
+            const btnSubmit = document.createElement('button');
+            btnSubmit.className = 'btn-action';
+            btnSubmit.innerHTML = `<i class="fas fa-check"></i>`;
+            btnSubmit.style.padding = '4px 10px';
+
+            dialog.appendChild(input);
+            dialog.appendChild(btnSubmit);
+            document.body.appendChild(dialog);
+
+            // Force auto-focus adjustments across mobile systems
+            setTimeout(() => input.focus(), 50);
+
+            function commitTextEntry() {
+                if (input.value.trim() !== '') {
+                    state.elements.push({
+                        type: 'text',
+                        text: input.value,
+                        x: x,
+                        y: y - state.strokeWidth, // Adjust slightly offset matching base paths
+                        color: state.strokeColor,
+                        size: state.strokeWidth
+                    });
+                    saveCanvasState();
+                    redrawAllElements();
+                }
+                dialog.remove();
+            }
+
+            btnSubmit.addEventListener('click', commitTextEntry);
+            input.addEventListener('keydown', (e) => { if(e.key === 'Enter') commitTextEntry(); });
+        }
+
+        // Export system layout as a physical download attachment package
+        function exportCanvasImage() {
+            // Drop current overlay frame highlights temporarily to secure clean output matrix bounds
+            const selectedCache = state.selectedElement;
+            state.selectedElement = null;
+            hideResizeOverlay();
+            redrawAllElements();
+
+            // Create temporary background download node configurations
+            const dataUrl = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = `marker-artwork-${Date.now()}.png`;
+            link.href = dataUrl;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // Re-apply layout selections state metrics gracefully if applicable
+            if (selectedCache) {
+                state.selectedElement = selectedCache;
+                redrawAllElements();
+            }
+        }
+
+        // Undo Redo Action Core Engines
+        function saveCanvasState() {
+            // Clear future redos if branches diverge
+            if (state.historyIndex < state.history.length - 1) {
+                state.history = state.history.slice(0, state.historyIndex + 1);
+            }
+            
+            // Deep clone elements matrix tree references safely
+            const stateSnapshot = JSON.parse(JSON.stringify(state.elements, (key, value) => {
+                if(key === 'img') return undefined; // Native Images cannot be processed via JSON stringify 
+                return value;
+            }));
+
+            // Restore Image Reference Nodes to Snapshot Tree Loops
+            state.elements.forEach((el, index) => {
+                if(el.type === 'image') stateSnapshot[index].img = el.img;
+            });
+
+            state.history.push(stateSnapshot);
+            state.historyIndex++;
+            updateHistoryButtons();
+        }
+
+        function undo() {
+            if (state.historyIndex > 0) {
+                state.historyIndex--;
+                restoreHistoryIndexState();
+            }
+        }
+
+        function redo() {
+            if (state.historyIndex < state.history.length - 1) {
+                state.historyIndex++;
+                restoreHistoryIndexState();
+            }
+        }
+
+        function restoreHistoryIndexState() {
+            const snapshot = state.history[state.historyIndex];
+            state.elements = JSON.parse(JSON.stringify(snapshot, (key, value) => {
+                if(key === 'img') return undefined;
+                return value;
+            }));
+
+            snapshot.forEach((el, index) => {
+                if(el.type === 'image') state.elements[index].img = el.img;
+            });
+
+            state.selectedElement = null;
+            hideResizeOverlay();
+            redrawAllElements();
+            updateHistoryButtons();
+        }
+
+        function updateHistoryButtons() {
+            document.getElementById('btn-undo').disabled = (state.historyIndex <= 0);
+            document.getElementById('btn-redo').disabled = (state.historyIndex >= state.history.length - 1);
+        }
+    </script>
+</body>
+</html>
